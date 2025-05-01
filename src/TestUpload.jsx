@@ -1,7 +1,7 @@
-// TestUpload.jsx – Updated with submit control and Greek filename support
+// TestUpload.jsx – Updated with submit control, Greek filename support, and back button at bottom
 import React, { useState } from 'react';
 
-function TestUpload() {
+function TestUpload({ onBack }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [experience, setExperience] = useState('');
@@ -12,7 +12,10 @@ function TestUpload() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file || submitting) return setMessage('Παρακαλώ επιλέξτε αρχείο PDF.');
+    if (!file || submitting) {
+      setMessage('Παρακαλώ επιλέξτε αρχείο PDF.');
+      return;
+    }
 
     setSubmitting(true);
     const formData = new FormData();
@@ -38,28 +41,40 @@ function TestUpload() {
     }
   };
 
+  const buttonStyle = {
+    padding: '10px 14px',
+    backgroundColor: '#6b7280',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    marginTop: '1rem'
+  };
+
   return (
-    <div style={{ maxWidth: 600, margin: 'auto', padding: 20, fontFamily: 'sans-serif' }}>
-      <h2>Test Upload Form</h2>
+    <div style={{ maxWidth: 600, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif' }}>
+      <h2>Ανέβασμα Βιογραφικού</h2>
       <form onSubmit={handleSubmit}>
         <label>Ονοματεπώνυμο:</label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required style={{ width: '100%', padding: 8, margin: '8px 0' }}/>
 
         <label>Email:</label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', padding: 8, margin: '8px 0' }}/>
 
-        <label>Εμπειρία:</label>
-        <textarea value={experience} onChange={(e) => setExperience(e.target.value)} required />
+        <label>Εμπειρία / Δεξιότητες:</label>
+        <textarea value={experience} onChange={(e) => setExperience(e.target.value)} required style={{ width: '100%', padding: 8, margin: '8px 0' }}/>
 
-        <label>Ανέβασμα PDF:</label>
-        <input type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files[0])} required />
+        <label>Ανέβασμα Βιογραφικού PDF:</label>
+        <input type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files[0])} required style={{ margin: '8px 0' }}/>
 
-        <button type="submit" disabled={submitting || submitted}>
-          {submitting ? 'Αποστολή...' : submitted ? 'Υποβλήθηκε' : 'Αποστολή'}
+        <button type="submit" disabled={submitting || submitted} style={buttonStyle}>
+          {submitting ? 'Υποβολή...' : submitted ? 'Υποβλήθηκε' : 'Υποβολή'}
         </button>
       </form>
 
-      {message && <p style={{ marginTop: 10, color: 'green' }}>{message}</p>}
+      {message && <p style={{ marginTop: 10, color: submitted ? 'green' : 'red' }}>{message}</p>}
+
+      <button onClick={onBack} style={buttonStyle}>⬅ Επιστροφή</button>
     </div>
   );
 }
