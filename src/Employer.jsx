@@ -21,15 +21,16 @@ export default function Employer({ onBack }) {
       .then(data => {
         setCvs(data);
 
-        // Μέτρημα κατηγοριών
+        // Μέτρημα κατηγοριών (μόνο ελληνικές)
         const counts = data.reduce((acc, cv) => {
           const cat = cv.category || 'Άγνωστη';
-          if (/^[Α-Ωα-ωάέίήύόώϊϋΰΐ0-9σ\/\s-]+$/.test(cat)) {
+          if (/^[Α-Ωα-ωάέίήύόώϊϋΰΐ0-9\s\/-]+$/.test(cat)) {
             acc[cat] = (acc[cat] || 0) + 1;
           }
           return acc;
         }, {});
 
+        // Μετατροπή σε πίνακα και ταξινόμηση
         const catsArr = Object.entries(counts)
           .map(([cat, count]) => ({ cat, count }))
           .sort((a, b) => a.cat.localeCompare(b.cat, 'el'));
@@ -64,7 +65,7 @@ export default function Employer({ onBack }) {
             borderRadius: 6,
             cursor: 'pointer',
             order: isMobile ? 2 : 0,
-            width: isMobile ? '100%' : '60%'
+            width: isMobile ? '100%' : 'auto'
           }}
         >
           ⬅ Επιστροφή
@@ -74,7 +75,7 @@ export default function Employer({ onBack }) {
           value={selectedCat}
           onChange={e => setSelectedCat(e.target.value)}
           style={{
-            width: isMobile ? '100%' : '35%',
+            flex: 1,
             padding: 10,
             borderRadius: 6,
             border: '1px solid #ccc',
@@ -117,7 +118,8 @@ export default function Employer({ onBack }) {
               📄 Δείτε το Βιογραφικό
             </a>
           </div>
-        ))}
+        ))
+      }
 
       {/* Mobile: πίσω κάτω */}
       {isMobile && (
