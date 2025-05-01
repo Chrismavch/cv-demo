@@ -1,143 +1,143 @@
-// src/Employer.jsx
-import React, { useEffect, useState } from 'react';
+// src/TestUpload.jsx
+import React, { useState, useEffect } from 'react';
 
-export default function Employer({ onBack }) {
-  const [cvs, setCvs] = useState([]);
+const ALL_CATEGORIES = [
+  'Πληροφορική',
+  'Διανομή',
+  'Εστίαση',
+  'Ψηφιακό Μάρκετινγκ',
+  'Καφέ/Barista',
+  'Δημιουργία Περιεχομένου'
+];
+
+export default function TestUpload({ onBack }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [experience, setExperience] = useState('');
+  const [file, setFile] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [selectedCat, setSelectedCat] = useState('Όλες οι κατηγορίες');
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
+  const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  // Handle window resize for responsive layout
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 600);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, []);
+  // Validate selection count
+  const toggleCategory = cat => {
+    setCategories(prev => {
+      if (prev.includes(cat)) {
+        return prev.filter(c => c !== cat);
+      } else if (prev.length < 3) {
+        return [...prev, cat];
+      }
+      return prev;
+    });
+  };
 
-  // Load CVs and build category counts
-  useEffect(() => {
-    fetch('http://localhost:5050/api/cvs')
-      .then(res => res.json())
-      .then(data => {
-        setCvs(data);
+  const handleSubmit = async e => {
+    e.preventDefault();
 
-        // Count per category (Greek + safe chars only)
-        const counts = data.reduce((acc, cv) => {
-          const cat = cv.category || 'Άγνωστη';
-          if (/^[Α-Ωα-ωάέίήύόώϊϋΰΐ0-9\s\/-]+$/.test(cat)) {
-            acc[cat] = (acc[cat] || 0) + 1;
-          }
-          return acc;
-        }, {});
+    if (!file) {
+      return setMessage('Παρακαλώ επιλέξτε αρχείο PDF.');
+    }
+    if (categories.length === 0) {
+      return setMessage('Παρακαλώ επιλέξτε τουλάχιστον μία κατηγορία.');
+    }
 
-        // Convert to sorted array
-        const catsArr = Object.entries(counts)
-          .map(([cat, count]) => ({ cat, count }))
-          .sort((a, b) => a.cat.localeCompare(b.cat, 'el'));
-        setCategories(catsArr);
-      })
-      .catch(console.error);
-  }, []);
+    setSubmitting(true);
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('experience', experience);
+    formData.append('cv', file);
+    formData.append('categories', JSON.stringify(categories));
 
-  // Filter CVs by selected category
-  const displayed = selectedCat === 'Όλες οι κατηγορίες'
-    ? cvs
-    : cvs.filter(cv => cv.category === selectedCat);
+    try {
+      const res = await fetch('http://localhost:5050/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      setMessage(res.ok ? '✅ Το βιογραφικό σας καταχωρήθηκε!' : data.message);
+      if (res.ok) setSubmitted(true);
+    } catch (err) {
+      console.error(err);
+      setMessage('Σφάλμα σύνδεσης με τον διακομιστή.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div style={{ maxWidth: 800, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif' }}>
-      {/* Toolbar with back button and category selector */}
-      <div style={{
-        display: 'flex',
-        flexDirection: isMobile ? 'column' : 'row',
-        alignItems: 'center',
-        gap: 10,
-        marginBottom: 20
-      }}>
-        {/* Back button: left on desktop, bottom on mobile */}
+    <div style={{ maxWidth: 600, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif' }}>
+      <h2>Test Upload Form</h2>
+      {/* Back button */}
+      <button
+        onClick={onBack}
+        style={{
+          marginBottom: 20,
+          padding: '10px 14px',
+          backgroundColor: '#6b7280',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 6,
+          cursor: 'pointer'
+        }}
+      >
+        ⬅ Επιστροφή
+      </button>
+
+      <form onSubmit={handleSubmit}>
+        {/* Categories checkboxes */}
+        <fieldset style={{ marginBottom: 20, border: '1px solid #ccc', borderRadius: 6, padding: 10 }}>
+          <legend style={{ fontWeight: 'bold' }}>Κατηγορίες (1–3 επιλογές)</legend>
+          {ALL_CATEGORIES.map(cat => (
+            <label key={cat} style={{ display: 'block', marginBottom: 6 }}>
+              <input
+                type="checkbox"
+                value={cat}
+                checked={categories.includes(cat)}
+                onChange={() => toggleCategory(cat)}
+                disabled={!categories.includes(cat) && categories.length >= 3}
+                style={{ marginRight: 8 }}
+              />
+              {cat}
+            </label>
+          ))}
+        </fieldset>
+
+        <label>Ονοματεπώνυμο:</label>
+        <input type="text" value={name} onChange={e => setName(e.target.value)} required style={{ width: '100%', marginBottom: 10, padding: 8 }} />
+
+        <label>Email:</label>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: '100%', marginBottom: 10, padding: 8 }} />
+
+        <label>Εμπειρία / Δεξιότητες:</label>
+        <textarea value={experience} onChange={e => setExperience(e.target.value)} required style={{ width: '100%', marginBottom: 10, padding: 8 }} />
+
+        <label>Ανέβασμα PDF:</label>
+        <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files[0])} required style={{ marginBottom: 20 }} />
+
         <button
-          onClick={onBack}
+          type="submit"
+          disabled={submitting || submitted}
           style={{
-            padding: '10px 14px',
-            backgroundColor: '#6b7280',
+            width: '100%',
+            padding: '12px 0',
+            backgroundColor: submitted ? '#16a34a' : '#1d4ed8',
             color: '#fff',
             border: 'none',
             borderRadius: 6,
-            cursor: 'pointer',
-            order: isMobile ? 2 : 0,
-            width: isMobile ? '100%' : 'auto'
+            fontWeight: 'bold',
+            cursor: submitted ? 'default' : 'pointer'
           }}
         >
-          ⬅ Επιστροφή
+          {submitted ? 'Υποβλήθηκε' : submitting ? 'Υποβολή...' : 'Υποβολή'}
         </button>
+      </form>
 
-        {/* Category dropdown */}
-        <select
-          value={selectedCat}
-          onChange={e => setSelectedCat(e.target.value)}
-          style={{
-            flex: 1,
-            padding: 10,
-            borderRadius: 6,
-            border: '1px solid #ccc',
-            fontSize: '1rem',
-            order: 1
-          }}
-        >
-          <option>Όλες οι κατηγορίες ({cvs.length})</option>
-          {categories.map(({ cat, count }) => (
-            <option key={cat} value={cat}>
-              {cat} ({count})
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* List of CVs */}
-      {displayed.length === 0
-        ? <p>Δεν βρέθηκαν βιογραφικά για την κατηγορία αυτή.</p>
-        : displayed.map((cv, i) => (
-          <div key={i} style={{
-            background: '#f9fafb',
-            padding: 20,
-            borderRadius: 8,
-            marginBottom: 16,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-          }}>
-            <p><strong>Όνομα:</strong> {cv.name}</p>
-            <p><strong>Email:</strong> {cv.email}</p>
-            <p><strong>Κατηγορία:</strong> {cv.category}</p>
-            <p><strong>Δεξιότητες:</strong> {cv.experience}</p>
-            <a
-              href={`http://localhost:5050/${cv.filePath}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#1d4ed8' }}
-            >
-              📄 Δείτε το Βιογραφικό
-            </a>
-          </div>
-        ))
-      }
-
-      {/* Mobile-only back button at the bottom */}
-      {isMobile && (
-        <div style={{ textAlign: 'center', marginTop: 20 }}>
-          <button
-            onClick={onBack}
-            style={{
-              padding: '10px 14px',
-              backgroundColor: '#6b7280',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-              width: '100%'
-            }}
-          >
-            ⬅ Επιστροφή
-          </button>
-        </div>
+      {message && (
+        <p style={{ marginTop: 12, color: submitted ? 'green' : 'red' }}>
+          {message}
+        </p>
       )}
     </div>
   );
