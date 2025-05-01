@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 
 function Employer({ onBack }) {
@@ -77,6 +76,9 @@ function Employer({ onBack }) {
 
   return (
     <div style={layoutStyles.container}>
+      <button style={layoutStyles.backButton} onClick={onBack}>
+        ⬅ Επιστροφή
+      </button>
       <h1 style={layoutStyles.header}>Λίστα Βιογραφικών Υποψηφίων</h1>
 
       <div style={layoutStyles.grid}>
@@ -108,10 +110,6 @@ function Employer({ onBack }) {
           ))}
         </div>
       </div>
-
-      <button style={{ ...layoutStyles.backButton, marginTop: 30 }} onClick={onBack}>
-        ⬅ Επιστροφή
-      </button>
     </div>
   );
 }
