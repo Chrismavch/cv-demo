@@ -1,4 +1,4 @@
-// Admin.jsx – Fully updated with filtering and responsive design
+// src/Admin.jsx
 import React, { useEffect, useState } from 'react';
 
 function Admin({ onBack }) {
@@ -19,27 +19,77 @@ function Admin({ onBack }) {
   );
 
   return (
-    <div style={{ maxWidth: 900, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif' }}>
-      <h1 style={{ color: '#1e3a8a' }}>Διαχείριση Βιογραφικών</h1>
-      <button onClick={onBack} style={{ marginBottom: 20, padding: '10px 14px', backgroundColor: '#6b7280', color: '#fff', border: 'none', borderRadius: 6 }}>⬅ Επιστροφή</button>
+    <div style={{
+      maxWidth: 900,
+      margin: 'auto',
+      padding: 20,
+      fontFamily: 'Segoe UI, sans-serif'
+    }}>
+      <h1 style={{ color: '#1e3a8a', textAlign: 'center' }}>Διαχείριση Βιογραφικών</h1>
+
+      <div style={{ textAlign: 'center', margin: '1rem 0' }}>
+        <button
+          onClick={onBack}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#6b7280',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+        >
+          ⬅ Επιστροφή
+        </button>
+      </div>
 
       <input
         type="text"
         placeholder="Αναζήτηση με όνομα, email ή εμπειρία..."
         value={search}
         onChange={e => setSearch(e.target.value)}
-        style={{ width: '100%', padding: 10, marginBottom: 20, borderRadius: 6, border: '1px solid #ccc' }}
+        style={{
+          width: '100%',
+          padding: 10,
+          marginBottom: 20,
+          borderRadius: 6,
+          border: '1px solid #ccc',
+          fontSize: '1rem'
+        }}
       />
 
       {filteredList.length === 0 ? (
-        <p>Δεν βρέθηκαν βιογραφικά.</p>
+        <p style={{ textAlign: 'center' }}>Δεν βρέθηκαν βιογραφικά.</p>
       ) : (
         filteredList.map((cv, index) => (
-          <div key={index} style={{ border: '1px solid #ccc', borderRadius: 8, padding: 14, marginBottom: 12, backgroundColor: '#f9fafb' }}>
+          <div
+            key={index}
+            style={{
+              border: '1px solid #ccc',
+              borderRadius: 8,
+              padding: 20,
+              marginBottom: 16,
+              backgroundColor: '#f9fafb',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+            }}
+          >
             <p><strong>Όνομα:</strong> {cv.name}</p>
             <p><strong>Email:</strong> {cv.email}</p>
             <p><strong>Εμπειρία:</strong> {cv.experience}</p>
-            <p><strong>Αρχείο:</strong> <a href={`/${cv.filePath}`} target="_blank" rel="noreferrer">{cv.filePath}</a></p>
+            {cv.categories && cv.categories.length > 0 && (
+              <p><strong>Κατηγορίες:</strong> {cv.categories.join(', ')}</p>
+            )}
+            <p>
+              <strong>Αρχείο:</strong>{' '}
+              <a
+                href={`http://localhost:5050/${cv.filePath}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                📄 Προβολή Λήψη
+              </a>
+            </p>
           </div>
         ))
       )}
