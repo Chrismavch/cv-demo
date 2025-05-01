@@ -1,112 +1,68 @@
-// TestUpload.jsx
 import React, { useState } from 'react';
 
-function TestUpload({ onBack }) {
+export default function TestUpload({ onBack }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [experience, setExperience] = useState('');
-  const [categories, setCategories] = useState([]);
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleCategoryChange = (e) => {
-    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
-    setCategories(selected);
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    if (!file || submitting) return setMessage('Παρακαλώ επιλέξτε αρχείο PDF.');
-    if (categories.length === 0) return setMessage('Παρακαλώ επιλέξτε τουλάχιστον μία κατηγορία.');
-
+    if (!file || submitting) return setMessage('Παρακαλώ επιλέξτε PDF.');
     setSubmitting(true);
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('experience', experience);
-    categories.forEach(cat => formData.append('categories', cat));
-    formData.append('cv', file);
-
+    const form = new FormData();
+    form.append('name', name);
+    form.append('email', email);
+    form.append('experience', experience);
+    form.append('cv', file);
     try {
       const res = await fetch('http://localhost:5050/api/upload', {
         method: 'POST',
-        body: formData,
+        body: form
       });
       const data = await res.json();
-      setMessage(data.message || 'Αποτυχία αποστολής.');
-      if (res.ok) setSubmitted(true);
+      setMessage(data.message);
+      setSubmitted(true);
     } catch {
-      setMessage('Σφάλμα σύνδεσης με backend.');
+      setMessage('Σφάλμα σύνδεσης.');
     } finally {
       setSubmitting(false);
     }
   };
 
+  const btn = { padding: '10px 16px', backgroundColor: '#1d4ed8', color: '#fff', border: 'none', borderRadius: 6, cursor: submitted ? 'default' : 'pointer' };
+
   return (
     <div style={{ maxWidth: 600, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif' }}>
-      <h2 style={{ color: '#1e3a8a' }}>Ανέβασμα Βιογραφικού</h2>
+      <h2 style={{ color: '#1e3a8a' }}>Δοκιμαστική Φόρμα Upload</h2>
       <form onSubmit={handleSubmit}>
-        <label>Ονοματεπώνυμο:</label>
-        <input type="text" value={name} onChange={e => setName(e.target.value)} required />
+        <label>Ονοματεπώνυμο</label>
+        <input type="text" value={name} onChange={e=>setName(e.target.value)} required style={{ width:'100%', padding:8, margin:'6px 0', borderRadius:4, border:'1px solid #ccc' }} />
 
-        <label>Email:</label>
-        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+        <label>Email</label>
+        <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required style={{ width:'100%', padding:8, margin:'6px 0', borderRadius:4, border:'1px solid #ccc' }} />
 
-        <label>Εμπειρία / Δεξιότητες:</label>
-        <textarea value={experience} onChange={e => setExperience(e.target.value)} required />
+        <label>Εμπειρία / Δεξιότητες</label>
+        <textarea value={experience} onChange={e=>setExperience(e.target.value)} required style={{ width:'100%', padding:8, margin:'6px 0', borderRadius:4, border:'1px solid #ccc' }} />
 
-        <label>Κατηγορίες (κρατήστε Ctrl για πολλαπλή επιλογή):</label>
-        <select multiple value={categories} onChange={handleCategoryChange} required style={{ width: '100%', padding: 8, marginBottom: 12 }}>
-          <option value="Πληροφορική">Πληροφορική</option>
-          <option value="Διοίκηση Επιχειρήσεων">Διοίκηση Επιχειρήσεων</option>
-          <option value="Μάρκετινγκ">Μάρκετινγκ</option>
-          <option value="Εστίαση">Εστίαση</option>
-          <option value="Barista">Barista</option>
-          <option value="Content Creation">Content Creation</option>
-          <option value="Social Media">Social Media</option>
-        </select>
+        <label>Αρχείο PDF</label>
+        <input type="file" accept="application/pdf" onChange={e=>setFile(e.target.files[0])} required style={{ margin:'6px 0' }} />
 
-        <label>Ανέβασμα PDF:</label>
-        <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files[0])} required />
-
-        <button
-          type="submit"
-          disabled={submitting || submitted}
-          style={{
-            marginTop: 20,
-            padding: '12px 18px',
-            backgroundColor: submitted ? '#16a34a' : '#1d4ed8',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: submitted ? 'default' : 'pointer',
-            fontWeight: 'bold'
-          }}
-        >
-          {submitted ? '✅ Υποβλήθηκε' : submitting ? 'Αποστολή...' : 'Αποστολή'}
+        <button type="submit" disabled={submitting||submitted} style={btn}>
+          {submitting ? 'Υποβολή...' : submitted ? 'Υποβλήθηκε' : 'Υποβολή'}
         </button>
       </form>
 
-      {message && <p style={{ marginTop: 10, color: submitted ? 'green' : 'red' }}>{message}</p>}
+      {message && <p style={{ marginTop:12, color: submitted ? 'green' : 'red' }}>{message}</p>}
 
-      <button
-        onClick={onBack}
-        style={{
-          marginTop: 30,
-          padding: '10px 14px',
-          backgroundColor: '#6b7280',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 6,
-          cursor: 'pointer'
-        }}
-      >
-        ⬅ Επιστροφή
-      </button>
+      <div style={{ textAlign:'center', marginTop:20 }}>
+        <button onClick={onBack} style={{ padding:'8px 14px', backgroundColor:'#6b7280', color:'#fff', border:'none', borderRadius:6 }}>
+          ⬅ Επιστροφή
+        </button>
+      </div>
     </div>
   );
 }
-
-export default TestUpload;
