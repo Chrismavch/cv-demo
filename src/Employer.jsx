@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 
 export default function Employer({ onBack }) {
   const [cvs, setCvs] = useState([]);
-  const [categories, setCategories] = useState([]);
+  // Categories will now be a list of unique category strings from the data
+  const [availableCategories, setAvailableCategories] = useState([]);
   const [selectedCat, setSelectedCat] = useState('Όλες οι κατηγορίες');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
 
@@ -14,35 +15,44 @@ export default function Employer({ onBack }) {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  // Load CVs and build category counts
+  // Load CVs and build list of available categories
   useEffect(() => {
     fetch('http://localhost:5050/api/cvs')
       .then(res => res.json())
       .then(data => {
         setCvs(data);
 
-        // Count per category (Greek + safe chars only)
-        const counts = data.reduce((acc, cv) => {
-          const cat = cv.category || 'Άγνωστη';
-          if (/^[Α-Ωα-ωάέίήύόώϊϋΰΐ0-9\s\/-]+$/.test(cat)) {
-            acc[cat] = (acc[cat] || 0) + 1;
-          }
-          return acc;
-        }, {});
+        // **FIX:** Collect all unique categories from the 'categories' array in CVs
+        const allCategories = new Set();
+        data.forEach(cv => {
+            // Ensure cv.categories is an array before iterating
+            if (Array.isArray(cv.categories)) {
+                cv.categories.forEach(cat => {
+                    // Basic check for valid looking Greek/ASCII category strings
+                    if (typeof cat === 'string' && /^[Α-Ωα-ωάέίήύόώϊϋΰΐA-Za-z0-9\s\/-]+$/.test(cat)) {
+                         allCategories.add(cat);
+                    }
+                });
+            }
+        });
 
         // Convert to sorted array
-        const catsArr = Object.entries(counts)
-          .map(([cat, count]) => ({ cat, count }))
-          .sort((a, b) => a.cat.localeCompare(b.cat, 'el'));
-        setCategories(catsArr);
+        const sortedCategories = Array.from(allCategories).sort((a, b) => a.localeCompare(b, 'el'));
+        setAvailableCategories(sortedCategories); // Update state with unique categories
       })
       .catch(console.error);
   }, []);
 
   // Filter CVs by selected category
+  // **FIX:** Filter based on if the cv.categories array includes the selected category
   const displayed = selectedCat === 'Όλες οι κατηγορίες'
     ? cvs
-    : cvs.filter(cv => cv.category === selectedCat);
+    : cvs.filter(cv => Array.isArray(cv.categories) && cv.categories.includes(selectedCat));
+
+
+    // **FIX:** Calculate counts for the displayed list for the dropdown label
+    const currentCategoryCount = selectedCat === 'Όλες οι κατηγορίες' ? cvs.length : displayed.length;
+
 
   return (
     <div style={{ maxWidth: 800, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif' }}>
@@ -84,10 +94,13 @@ export default function Employer({ onBack }) {
             order: 1
           }}
         >
-          <option>Όλες οι κατηγορίες ({cvs.length})</option>
-          {categories.map(({ cat, count }) => (
+          {/* **FIX:** Update dropdown label to reflect the count of the selected category */}
+          <option value="Όλες οι κατηγορίες">Όλες οι κατηγορίες ({cvs.length})</option>
+           {/* **FIX:** Map through the collected unique categories */}
+          {availableCategories.map((cat) => (
             <option key={cat} value={cat}>
-              {cat} ({count})
+              {/* **FIX:** Calculate and display count for each specific category option */}
+              {cat} ({cvs.filter(cv => Array.isArray(cv.categories) && cv.categories.includes(cat)).length})
             </option>
           ))}
         </select>
@@ -95,7 +108,7 @@ export default function Employer({ onBack }) {
 
       {/* List of CVs */}
       {displayed.length === 0
-        ? <p>Δεν βρέθηκαν βιογραφικά για την κατηγορία αυτή.</p>
+        ? <p>Δεν βρέθηκαν βιογραφικά {selectedCat !== 'Όλες οι κατηγορίες' ? `για την κατηγορία "${selectedCat}"` : ''}.</p>
         : displayed.map((cv, i) => (
           <div key={i} style={{
             background: '#f9fafb',
@@ -106,8 +119,13 @@ export default function Employer({ onBack }) {
           }}>
             <p><strong>Όνομα:</strong> {cv.name}</p>
             <p><strong>Email:</strong> {cv.email}</p>
-            <p><strong>Κατηγορία:</strong> {cv.category}</p>
-            <p><strong>Δεξιότητες:</strong> {cv.experience}</p>
+             {/* **FIX:** Display categories as a comma-separated string */}
+            {cv.categories?.length > 0 && (
+                 <p><strong>Κατηγορίες:</strong> {cv.categories.join(', ')}</p>
+            )}
+            <p><strong>Εμπειρία:</strong> {cv.experience}</p> {/* Reordered experience/categories for consistency */}
+
+            {/* Link construction remains the same, as backend now provides correct filePath */}
             <a
               href={`http://localhost:5050/${cv.filePath}`}
               target="_blank"
