@@ -1,4 +1,3 @@
-// App.jsx – Greek version with modern corporate styling
 import React, { useState } from 'react';
 import Employer from './Employer';
 import Admin from './Admin';
@@ -11,9 +10,30 @@ function App() {
   const [file, setFile] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setTimeout(() => setSuccess(true), 1000);
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('experience', experience);
+    formData.append('cv', file);
+
+    try {
+      const res = await fetch('http://localhost:5050/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess(true);
+      } else {
+        alert(data.message || 'Αποτυχία αποστολής.');
+      }
+    } catch (err) {
+      alert('Σφάλμα σύνδεσης με τον διακομιστή.');
+    }
   };
 
   const buttonStyle = {
@@ -43,12 +63,19 @@ function App() {
     marginTop: 12
   };
 
+  const containerStyle = {
+    maxWidth: 600,
+    margin: 'auto',
+    padding: 20,
+    fontFamily: 'Segoe UI, sans-serif'
+  };
+
   if (view === 'employer') return <Employer onBack={() => setView('landing')} />;
   if (view === 'admin') return <Admin onBack={() => setView('landing')} />;
 
   if (view === 'user') {
     return (
-      <div style={{ maxWidth: 600, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif' }}>
+      <div style={containerStyle}>
         <h1 style={{ color: '#1e3a8a' }}>Ανέβασμα Βιογραφικού</h1>
         <button onClick={() => setView('landing')} style={{ marginBottom: 20, ...buttonStyle, backgroundColor: '#6b7280' }}>⬅ Επιστροφή</button>
 
@@ -69,7 +96,7 @@ function App() {
 
           {success && (
             <p style={{ color: 'green', marginTop: 12 }}>
-              Το βιογραφικό σας καταχωρήθηκε και αξιολογείται.
+              Το βιογραφικό σας καταχωρήθηκε με επιτυχία.
             </p>
           )}
         </form>
@@ -77,9 +104,8 @@ function App() {
     );
   }
 
-  // Landing Page View
   return (
-    <div style={{ maxWidth: 600, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif', textAlign: 'center' }}>
+    <div style={{ ...containerStyle, textAlign: 'center' }}>
       <img src="/cv-logo.png" alt="Λογότυπο" style={{ width: 80, marginBottom: 10 }} />
       <h1 style={{ fontSize: '2rem', marginBottom: 10, color: '#1e3a8a' }}>Καλωσορίσατε στην Πλατφόρμα Βιογραφικών</h1>
       <p style={{ marginBottom: 20 }}>Αυτή η εφαρμογή δημιουργήθηκε για τους Σπύρο Αλαφούζο & Χρήστο Μαυρίδη</p>
