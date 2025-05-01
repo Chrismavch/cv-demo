@@ -1,9 +1,10 @@
+// App.jsx – Greek version with modern corporate styling
 import React, { useState } from 'react';
 import Employer from './Employer';
 import Admin from './Admin';
 
 function App() {
-  const [view, setView] = useState('user');
+  const [view, setView] = useState('landing');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [experience, setExperience] = useState('');
@@ -15,63 +16,83 @@ function App() {
     setTimeout(() => setSuccess(true), 1000);
   };
 
-  if (view === 'employer') return <Employer onBack={() => setView('user')} />;
-  if (view === 'admin') return <Admin onBack={() => setView('user')} />;
+  const buttonStyle = {
+    padding: '12px 18px',
+    backgroundColor: '#1d4ed8',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    transition: 'background-color 0.3s ease'
+  };
 
+  const inputStyle = {
+    width: '100%',
+    marginBottom: 12,
+    padding: 10,
+    border: '1px solid #ccc',
+    borderRadius: '6px',
+    fontSize: '1rem'
+  };
+
+  const labelStyle = {
+    fontWeight: 'bold',
+    display: 'block',
+    marginBottom: 4,
+    marginTop: 12
+  };
+
+  if (view === 'employer') return <Employer onBack={() => setView('landing')} />;
+  if (view === 'admin') return <Admin onBack={() => setView('landing')} />;
+
+  if (view === 'user') {
+    return (
+      <div style={{ maxWidth: 600, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif' }}>
+        <h1 style={{ color: '#1e3a8a' }}>Ανέβασμα Βιογραφικού</h1>
+        <button onClick={() => setView('landing')} style={{ marginBottom: 20, ...buttonStyle, backgroundColor: '#6b7280' }}>⬅ Επιστροφή</button>
+
+        <form onSubmit={handleSubmit}>
+          <label style={labelStyle}>Ονοματεπώνυμο</label>
+          <input type='text' value={name} onChange={e => setName(e.target.value)} required style={inputStyle} />
+
+          <label style={labelStyle}>Email</label>
+          <input type='email' value={email} onChange={e => setEmail(e.target.value)} required style={inputStyle} />
+
+          <label style={labelStyle}>Εμπειρία / Δεξιότητες</label>
+          <textarea value={experience} onChange={e => setExperience(e.target.value)} required style={inputStyle} />
+
+          <label style={labelStyle}>Ανέβασμα Βιογραφικού (PDF)</label>
+          <input type='file' accept='application/pdf' onChange={e => setFile(e.target.files[0])} required style={{ marginBottom: 20 }} />
+
+          <button type='submit' style={buttonStyle}>Υποβολή</button>
+
+          {success && (
+            <p style={{ color: 'green', marginTop: 12 }}>
+              Το βιογραφικό σας καταχωρήθηκε και αξιολογείται.
+            </p>
+          )}
+        </form>
+      </div>
+    );
+  }
+
+  // Landing Page View
   return (
-    <div style={{ maxWidth: 600, margin: 'auto', padding: 20, fontFamily: 'sans-serif' }}>
-      <h1>Ανέβασμα Βιογραφικού</h1>
+    <div style={{ maxWidth: 600, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif', textAlign: 'center' }}>
+      <img src="/cv-logo.png" alt="Λογότυπο" style={{ width: 80, marginBottom: 10 }} />
+      <h1 style={{ fontSize: '2rem', marginBottom: 10, color: '#1e3a8a' }}>Καλωσορίσατε στην Πλατφόρμα Βιογραφικών</h1>
+      <p style={{ marginBottom: 20 }}>Αυτή η εφαρμογή δημιουργήθηκε για τους Σπύρο Αλαφούζο & Χρήστο Μαυρίδη</p>
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-        <button onClick={() => setView('user')}>Υποψήφιος</button>
-        <button onClick={() => setView('employer')}>Εργοδότης</button>
-        <button onClick={() => setView('admin')}>Διαχειριστής</button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <button onClick={() => setView('user')} style={buttonStyle}>Υποψήφιος</button>
+        <button onClick={() => setView('employer')} style={buttonStyle}>Εργοδότης</button>
+        <button onClick={() => setView('admin')} style={buttonStyle}>Διαχειριστής</button>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <label>Ονοματεπώνυμο</label><br />
-        <input
-          type='text'
-          value={name}
-          onChange={e => setName(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10 }}
-        /><br />
-
-        <label>Email</label><br />
-        <input
-          type='email'
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10 }}
-        /><br />
-
-        <label>Εμπειρία / Δεξιότητες</label><br />
-        <textarea
-          value={experience}
-          onChange={e => setExperience(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10 }}
-        /><br />
-
-        <label>Ανέβασμα Βιογραφικού (PDF)</label><br />
-        <input
-          type='file'
-          accept='application/pdf'
-          onChange={e => setFile(e.target.files[0])}
-          required
-          style={{ marginBottom: 10 }}
-        /><br />
-
-        <button type='submit'>Υποβολή</button>
-
-        {success && (
-          <p style={{ color: 'green', marginTop: 10 }}>
-            Το βιογραφικό σας καταχωρήθηκε και αξιολογείται.
-          </p>
-        )}
-      </form>
+      <p style={{ fontSize: '0.8rem', marginTop: 40, color: '#666' }}>
+        © {new Date().getFullYear()} Πλατφόρμα Βιογραφικών | Δημιουργήθηκε από την ομάδα ανάπτυξης
+      </p>
     </div>
   );
 }
