@@ -39,6 +39,7 @@ function Employer({ onBack }) {
       textAlign: 'center',
     },
     backButton: {
+      display: 'inline-block',
       marginBottom: 20,
       padding: '10px 16px',
       backgroundColor: '#6b7280',
