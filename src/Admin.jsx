@@ -1,7 +1,6 @@
-// src/Admin.jsx
 import React, { useEffect, useState } from 'react';
 
-function Admin({ onBack }) {
+export default function Admin({ onBack }) {
   const [cvList, setCvList] = useState([]);
   const [search, setSearch] = useState('');
 
@@ -19,12 +18,7 @@ function Admin({ onBack }) {
   );
 
   return (
-    <div style={{
-      maxWidth: 900,
-      margin: 'auto',
-      padding: 20,
-      fontFamily: 'Segoe UI, sans-serif'
-    }}>
+    <div style={{ maxWidth: 900, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif' }}>
       <h1 style={{ color: '#1e3a8a', textAlign: 'center' }}>Διαχείριση Βιογραφικών</h1>
 
       <div style={{ textAlign: 'center', margin: '1rem 0' }}>
@@ -77,7 +71,7 @@ function Admin({ onBack }) {
             <p><strong>Όνομα:</strong> {cv.name}</p>
             <p><strong>Email:</strong> {cv.email}</p>
             <p><strong>Εμπειρία:</strong> {cv.experience}</p>
-            {cv.categories && cv.categories.length > 0 && (
+            {cv.categories?.length > 0 && (
               <p><strong>Κατηγορίες:</strong> {cv.categories.join(', ')}</p>
             )}
             <p>
@@ -87,7 +81,7 @@ function Admin({ onBack }) {
                 target="_blank"
                 rel="noreferrer"
               >
-                📄 Προβολή Λήψη
+                📄 Προβολή / Λήψη
               </a>
             </p>
           </div>
@@ -96,5 +90,3 @@ function Admin({ onBack }) {
     </div>
   );
 }
-
-export default Admin;
