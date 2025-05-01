@@ -7,21 +7,21 @@ export default function Employer({ onBack }) {
   const [selectedCat, setSelectedCat] = useState('Όλες οι κατηγορίες');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
 
-  // Διαχείριση αλλαγής μεγέθους
+  // Handle window resize for responsive layout
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 600);
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  // Φόρτωση CVs
+  // Load CVs and build category counts
   useEffect(() => {
     fetch('http://localhost:5050/api/cvs')
       .then(res => res.json())
       .then(data => {
         setCvs(data);
 
-        // Μέτρημα κατηγοριών (μόνο ελληνικές)
+        // Count per category (Greek + safe chars only)
         const counts = data.reduce((acc, cv) => {
           const cat = cv.category || 'Άγνωστη';
           if (/^[Α-Ωα-ωάέίήύόώϊϋΰΐ0-9\s\/-]+$/.test(cat)) {
@@ -30,7 +30,7 @@ export default function Employer({ onBack }) {
           return acc;
         }, {});
 
-        // Μετατροπή σε πίνακα και ταξινόμηση
+        // Convert to sorted array
         const catsArr = Object.entries(counts)
           .map(([cat, count]) => ({ cat, count }))
           .sort((a, b) => a.cat.localeCompare(b.cat, 'el'));
@@ -39,14 +39,14 @@ export default function Employer({ onBack }) {
       .catch(console.error);
   }, []);
 
-  // Φιλτράρισμα
+  // Filter CVs by selected category
   const displayed = selectedCat === 'Όλες οι κατηγορίες'
     ? cvs
     : cvs.filter(cv => cv.category === selectedCat);
 
   return (
     <div style={{ maxWidth: 800, margin: 'auto', padding: 20, fontFamily: 'Segoe UI, sans-serif' }}>
-      {/* Toolbar */}
+      {/* Toolbar with back button and category selector */}
       <div style={{
         display: 'flex',
         flexDirection: isMobile ? 'column' : 'row',
@@ -54,7 +54,7 @@ export default function Employer({ onBack }) {
         gap: 10,
         marginBottom: 20
       }}>
-        {/* Desktop: πίσω αριστερά, Mobile: στο τέλος */}
+        {/* Back button: left on desktop, bottom on mobile */}
         <button
           onClick={onBack}
           style={{
@@ -71,6 +71,7 @@ export default function Employer({ onBack }) {
           ⬅ Επιστροφή
         </button>
 
+        {/* Category dropdown */}
         <select
           value={selectedCat}
           onChange={e => setSelectedCat(e.target.value)}
@@ -83,9 +84,7 @@ export default function Employer({ onBack }) {
             order: 1
           }}
         >
-          <option>
-            Όλες οι κατηγορίες ({cvs.length})
-          </option>
+          <option>Όλες οι κατηγορίες ({cvs.length})</option>
           {categories.map(({ cat, count }) => (
             <option key={cat} value={cat}>
               {cat} ({count})
@@ -94,7 +93,7 @@ export default function Employer({ onBack }) {
         </select>
       </div>
 
-      {/* Εμφάνιση CVs */}
+      {/* List of CVs */}
       {displayed.length === 0
         ? <p>Δεν βρέθηκαν βιογραφικά για την κατηγορία αυτή.</p>
         : displayed.map((cv, i) => (
@@ -121,7 +120,7 @@ export default function Employer({ onBack }) {
         ))
       }
 
-      {/* Mobile: πίσω κάτω */}
+      {/* Mobile-only back button at the bottom */}
       {isMobile && (
         <div style={{ textAlign: 'center', marginTop: 20 }}>
           <button
